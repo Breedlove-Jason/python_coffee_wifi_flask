@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash
+import os
 from flask_bootstrap5 import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 
@@ -53,5 +54,6 @@ def add_cafe():
     return render_template("add.html", form=form)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
