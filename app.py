@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, flash
 import os
-from flask_bootstrap5 import Bootstrap
+from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 
 from form import CafeForm
