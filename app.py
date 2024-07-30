@@ -1,46 +1,57 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask_bootstrap import Bootstrap
+from flask import Flask, render_template, redirect, url_for, flash
+from flask_bootstrap5 import Bootstrap
+from flask_sqlalchemy import SQLAlchemy
+
 from form import CafeForm
-import csv
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config["SECRET_KEY"] = "your_secret_key"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cafes.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 Bootstrap(app)
+db = SQLAlchemy(app)
 
 
-# all Flask routes below
+class Cafe(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    location = db.Column(db.String(250), nullable=False)
+    open_time = db.Column(db.String(100), nullable=False)
+    close_time = db.Column(db.String(100), nullable=False)
+    coffee_rating = db.Column(db.String(10), nullable=False)
+    wifi_rating = db.Column(db.String(10), nullable=False)
+    power_rating = db.Column(db.String(10), nullable=False)
+
+
+with app.app_context():
+    db.create_all()
+
+
 @app.route("/")
 def home():
-    return render_template("index.html")
+    cafes = Cafe.query.all()
+    return render_template("index.html", cafes=cafes)
 
 
-@app.route('/add', methods=['GET', 'POST'])
+@app.route("/add", methods=["GET", "POST"])
 def add_cafe():
     form = CafeForm()
     if form.validate_on_submit():
-        with open('./static/cafe-data.csv', newline='', mode='a') as csv_file:
-            csv_file.write(f"\n{form.cafe.data},"
-                           f"{form.location_url.data},"
-                           f"{form.open_time.data},"
-                           f"{form.close_time.data},"
-                           f"{form.coffee_rating.data},"
-                           f"{form.wifi_rating.data},"
-                           f"{form.power_rating.data}")
-            return redirect(url_for('cafes'))
-
-    return render_template('add.html', form=form)
-
-
-@app.route('/cafes')
-def cafes():
-    list_of_rows = []
-    with open('./static/cafe-data.csv', newline='') as csv_file:
-        csv_data = csv.reader(csv_file, delimiter=',')
-        headers = next(csv_data)
-        for row in csv_data:
-            list_of_rows.append(dict(zip(headers, row)))
-    return render_template('cafes.html', cafes=list_of_rows)
+        new_cafe = Cafe(
+            name=form.name.data,
+            location=form.location.data,
+            open_time=form.open_time.data,
+            close_time=form.close_time.data,
+            coffee_rating=form.coffee_rating.data,
+            wifi_rating=form.wifi_rating.data,
+            power_rating=form.power_rating.data,
+        )
+        db.session.add(new_cafe)
+        db.session.commit()
+        flash("Cafe added successfully!", "success")
+        return redirect(url_for("home"))
+    return render_template("add.html", form=form)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
