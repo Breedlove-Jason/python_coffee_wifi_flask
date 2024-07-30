@@ -1,9 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, flash
-import os
-from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_bootstrap import Bootstrap  # Change to Flask-Bootstrap
 from form import CafeForm
+import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
